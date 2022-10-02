@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<div>
+  <video id="video"></video>
+  <canvas id="canvas"></canvas>
+  <!--  <canvas id="canvas" style="display: none"></canvas>-->
+  <script>
+      const width = 480;
+      const height = 320;
+      const video = document.getElementById('video');
+
+      //访问摄像头
+      if (navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia) {
+          //调用用户媒体设备, 访问摄像头
+          getUserMedia({video: {width: width, height: height}}, success, error);
+      } else {
+          alert('不支持访问用户媒体');
+      }
+
+      //访问用户媒体设备的兼容方法
+      function getUserMedia(constraints, success, error) {
+          if (navigator.mediaDevices.getUserMedia) {
+              //最新的标准API
+              navigator.mediaDevices.getUserMedia(constraints).then(success).catch(error);
+          } else if (navigator.webkitGetUserMedia) {
+              //webkit核心浏览器
+              navigator.webkitGetUserMedia(constraints, success, error)
+          } else if (navigator.mozGetUserMedia) {
+              //firfox浏览器
+              navigator.mozGetUserMedia(constraints, success, error);
+          } else if (navigator.getUserMedia) {
+              //旧版API
+              navigator.getUserMedia(constraints, success, error);
+          }
+      }
+
+      //成功回调
+      function success(stream) {
+          console.log('成功');
+          //兼容webkit核心浏览器
+          // const CompatibleURL = window.URL || window.webkitURL;
+          //将视频流设置为video元素的源
+          // video.src = CompatibleURL.createObjectURL(stream);
+          video.srcObject = stream;
+          video.play();
+          setInterval(drawCanvasImage, 10)
+      }
+
+      //失败回调
+      function error(error) {
+          console.log('失败');
+          console.log("访问用户媒体设备失败", error);
+      }
+
+      function drawCanvasImage() {
+          const canvas = document.getElementById('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const context = canvas.getContext('2d');
+          context.drawImage(video, 0, 0, width, height, 0, 0, width, height);
+          //获取图片，数据格式为base64
+          const imageData = canvas.toDataURL("image/png");
+          console.log(imageData)
+      }
+  </script>
+
+</div>
+</body>
+</html>
